@@ -3,7 +3,7 @@
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Bill } from "@/types/bill";
+import { Bill } from "@/types/models/bill";
 import {
   Dialog,
   DialogContent,

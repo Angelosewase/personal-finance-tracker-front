@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Bill } from "@/types/bill";
+import { Bill } from "@/types/models/bill";
 import { cn } from "@/lib/utils";
 import { formatCurrency } from "@/lib/formatters";
 import { 

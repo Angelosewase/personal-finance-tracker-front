@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Bill } from "@/types/bill";
+import { Bill } from "@/types/models/bill";
 
 // Sample data for demonstration
 const initialBills: Bill[] = [

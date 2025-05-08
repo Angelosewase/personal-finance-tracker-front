@@ -1,6 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Transaction } from "@/lib/data/mock-transactions";
+import { Transaction } from "@/types/models/transaction";
 import { formatCurrency, formatDate } from "@/lib/formatters";
 
 interface TransactionCardProps {

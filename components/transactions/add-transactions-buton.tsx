@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { PlusCircle, X } from "lucide-react";
+import { useState, FormEvent } from "react";
+import { PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -22,19 +22,82 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { toast } from "sonner";
+import transactionService from "@/services/transactionService";
+import { TransactionType, TransactionStatus } from "@/types/models/transaction";
 
 export function AddTransactionButton() {
   const [open, setOpen] = useState(false);
-  const [transactionType, setTransactionType] = useState("expense");
+  const [transactionType, setTransactionType] = useState<string>("expense");
+  const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    amount: "",
+    description: "",
+    category: "",
+    date: new Date().toISOString().split("T")[0]
+  });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { id, value } = e.target;
+    setFormData(prev => ({ ...prev, [id]: value }));
+  };
+
+  const handleCategoryChange = (value: string) => {
+    setFormData(prev => ({ ...prev, category: value }));
+  };
+
+  const resetForm = () => {
+    setFormData({
+      amount: "",
+      description: "",
+      category: "",
+      date: new Date().toISOString().split("T")[0]
+    });
+    setTransactionType("expense");
+  };
+
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    // Handle form submission logic here
-    setOpen(false);
+    
+    if (!formData.amount || !formData.description || !formData.category || !formData.date) {
+      toast.error("Please fill in all required fields");
+      return;
+    }
+    
+    try {
+      setLoading(true);
+      
+      // Prepare data based on transaction type
+      const amount = parseFloat(formData.amount);
+      const finalAmount = transactionType === "expense" ? -Math.abs(amount) : Math.abs(amount);
+      
+      await transactionService.createTransaction({
+        amount: finalAmount,
+        type: transactionType === "expense" ? TransactionType.DEBIT : TransactionType.CREDIT,
+        description: formData.description,
+        category: formData.category,
+        date: formData.date,
+        status: TransactionStatus.COMPLETED
+      });
+      
+      toast.success("Transaction added successfully");
+      setOpen(false);
+      resetForm();
+    } catch (error) {
+      console.error("Failed to add transaction:", error);
+      toast.error("Failed to add transaction. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={(newOpen) => {
+      setOpen(newOpen);
+      if (!newOpen) {
+        resetForm();
+      }
+    }}>
       <DialogTrigger asChild>
         <Button className="gap-2">
           <PlusCircle className="h-4 w-4" />
@@ -51,7 +114,7 @@ export function AddTransactionButton() {
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <RadioGroup
-              defaultValue="expense"
+              value={transactionType}
               className="grid grid-cols-2 gap-4"
               onValueChange={setTransactionType}
             >
@@ -103,6 +166,8 @@ export function AddTransactionButton() {
                   placeholder="0.00"
                   className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
                   required
+                  value={formData.amount}
+                  onChange={handleChange}
                 />
               </div>
             </div>
@@ -116,6 +181,8 @@ export function AddTransactionButton() {
                 placeholder="What was this for?"
                 className="col-span-3"
                 required
+                value={formData.description}
+                onChange={handleChange}
               />
             </div>
 
@@ -123,31 +190,35 @@ export function AddTransactionButton() {
               <Label htmlFor="category" className="text-right">
                 Category
               </Label>
-              <Select required>
+              <Select 
+                required 
+                value={formData.category}
+                onValueChange={handleCategoryChange}
+              >
                 <SelectTrigger id="category" className="col-span-3">
                   <SelectValue placeholder="Select a category" />
                 </SelectTrigger>
                 <SelectContent>
                   {transactionType === "expense" ? (
                     <>
-                      <SelectItem value="food">Food & Dining</SelectItem>
-                      <SelectItem value="shopping">Shopping</SelectItem>
-                      <SelectItem value="housing">Housing</SelectItem>
-                      <SelectItem value="transportation">Transportation</SelectItem>
-                      <SelectItem value="entertainment">Entertainment</SelectItem>
-                      <SelectItem value="health">Health & Wellness</SelectItem>
-                      <SelectItem value="utilities">Utilities</SelectItem>
-                      <SelectItem value="travel">Travel</SelectItem>
-                      <SelectItem value="education">Education</SelectItem>
+                      <SelectItem value="Food & Dining">Food & Dining</SelectItem>
+                      <SelectItem value="Shopping">Shopping</SelectItem>
+                      <SelectItem value="Housing">Housing</SelectItem>
+                      <SelectItem value="Transportation">Transportation</SelectItem>
+                      <SelectItem value="Entertainment">Entertainment</SelectItem>
+                      <SelectItem value="Health & Wellness">Health & Wellness</SelectItem>
+                      <SelectItem value="Utilities">Utilities</SelectItem>
+                      <SelectItem value="Travel">Travel</SelectItem>
+                      <SelectItem value="Education">Education</SelectItem>
                     </>
                   ) : (
                     <>
-                      <SelectItem value="salary">Salary</SelectItem>
-                      <SelectItem value="freelance">Freelance</SelectItem>
-                      <SelectItem value="investment">Investment</SelectItem>
-                      <SelectItem value="gift">Gift</SelectItem>
-                      <SelectItem value="refund">Refund</SelectItem>
-                      <SelectItem value="other">Other</SelectItem>
+                      <SelectItem value="Salary">Salary</SelectItem>
+                      <SelectItem value="Freelance">Freelance</SelectItem>
+                      <SelectItem value="Investment">Investment</SelectItem>
+                      <SelectItem value="Gift">Gift</SelectItem>
+                      <SelectItem value="Refund">Refund</SelectItem>
+                      <SelectItem value="Other">Other</SelectItem>
                     </>
                   )}
                 </SelectContent>
@@ -163,15 +234,18 @@ export function AddTransactionButton() {
                 type="date"
                 className="col-span-3"
                 required
-                defaultValue={new Date().toISOString().split("T")[0]}
+                value={formData.date}
+                onChange={handleChange}
               />
             </div>
           </div>
           <DialogFooter>
-            <Button type="button" variant="ghost" onClick={() => setOpen(false)}>
+            <Button type="button" variant="ghost" onClick={() => setOpen(false)} disabled={loading}>
               Cancel
             </Button>
-            <Button type="submit">Add Transaction</Button>
+            <Button type="submit" disabled={loading}>
+              {loading ? "Adding..." : "Add Transaction"}
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>

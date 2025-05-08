@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Bill } from "@/types/bill";
+import { Bill } from "@/types/models/bill";
 import {
   Card,
   CardContent,

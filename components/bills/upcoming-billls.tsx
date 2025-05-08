@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { Bill } from "@/types/bill";
+import { Bill } from "@/types/models/bill";
 import { formatCurrency, formatDateRelative } from "@/lib/formatters";
 import { Badge } from "@/components/ui/badge";
 

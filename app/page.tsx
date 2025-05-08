@@ -1,8 +1,17 @@
+import HeroSection from "@/components/hero-section";
+import Features from "@/components/features-1";
+import Testimonials from "@/components/testimonials";
+import CallToAction from "@/components/call-to-action";
+import Footer from "@/components/footer";
+
 export default function HomePage() {
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen">
-      <h1 className="text-2xl font-bold">Personal Finance Tracker</h1>
-      <p className="mt-4">Welcome to your personal finance dashboard</p>
+    <div className="">
+      <HeroSection />
+      <Features />
+      <Testimonials />
+      <CallToAction />
+      <Footer />
     </div>
   );
 }
